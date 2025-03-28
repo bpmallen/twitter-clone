@@ -5,7 +5,7 @@ import XSvg from "../../../components/svgs/X";
 
 import { MdOutlineMail } from "react-icons/md";
 import { MdPassword } from "react-icons/md";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
@@ -13,6 +13,8 @@ const LoginPage = () => {
     username: "",
     password: "",
   });
+
+  const queryClient = useQueryClient();
 
   const {
     mutate: loginMutation,
@@ -38,7 +40,7 @@ const LoginPage = () => {
       }
     },
     onSuccess: () => {
-      toast.success("Login successfull");
+      queryClient.invalidateQueries({ queryKey: ["authUser"] });
     },
   });
 
@@ -83,17 +85,13 @@ const LoginPage = () => {
               value={formData.password}
             />
           </label>
-          <button className="btn rounded-full btn-primary text-white">
-            {isPending ? "Loading..." : "Login"}
-          </button>
+          <button className="btn rounded-full btn-primary text-white">{isPending ? "Loading..." : "Login"}</button>
           {isError && <p className="text-red-500">{error.message}</p>}
         </form>
         <div className="flex flex-col gap-2 mt-4">
           <p className="text-white text-lg">{"Don't"} have an account?</p>
           <Link to="/signup">
-            <button className="btn rounded-full btn-primary text-white btn-outline w-full">
-              Sign up
-            </button>
+            <button className="btn rounded-full btn-primary text-white btn-outline w-full">Sign up</button>
           </Link>
         </div>
       </div>

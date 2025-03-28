@@ -19,6 +19,7 @@ function App() {
       try {
         const res = await fetch("/api/auth/me");
         const data = await res.json();
+        if (data.error) return null;
         if (!res.ok) {
           throw new Error(data.error || "Something went wrong");
         }
@@ -37,10 +38,11 @@ function App() {
       </div>
     );
   }
+
   return (
     <>
       <div className="flex max-w-6xl mx-auto">
-        <Sidebar /> {/* Common component as its not wrapped in Routes */}
+        {authUser && <Sidebar />} {/* Common component as its not wrapped in Routes */}
         <Routes>
           <Route path="/" element={authUser ? <HomePage /> : <Navigate to="/login" />}></Route>
           <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to="/" />}></Route>
@@ -48,7 +50,7 @@ function App() {
           <Route path="/notifications" element={authUser ? <NotificationPage /> : <Navigate to="/login" />}></Route>
           <Route path="/profile/:username" element={authUser ? <ProfilePage /> : <Navigate to="/login" />}></Route>
         </Routes>
-        <RightPanel /> {/* Another common/shared component on all pages */}
+        {authUser && <RightPanel />} {/* Another common/shared component on all pages */}
         <Toaster />
       </div>
     </>
