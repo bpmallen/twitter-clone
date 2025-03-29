@@ -23,6 +23,7 @@ function App() {
         if (!res.ok) {
           throw new Error(data.error || "Something went wrong");
         }
+        console.log("response object ----->", res);
         console.log("authUser is here:", data);
         return data;
       } catch (error) {
