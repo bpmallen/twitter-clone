@@ -26,9 +26,7 @@ export const followUnfollowUser = async (req, res) => {
     const currentUser = await User.findById(req.user._id);
 
     if (id === req.user._id.toString()) {
-      return res
-        .status(400)
-        .json({ error: "You can't follow/unfollow yourself" });
+      return res.status(400).json({ error: "You can't follow/unfollow yourself" });
     }
 
     if (!userToModify || !currentUser) {
@@ -41,7 +39,7 @@ export const followUnfollowUser = async (req, res) => {
       // Unfollow the user
       await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
       await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
-      // TODO: return the id of the user as a response
+
       res.status(200).json({ message: "User unfollowed successfully" });
     } else {
       // Follow the User
@@ -55,8 +53,6 @@ export const followUnfollowUser = async (req, res) => {
       });
 
       await newNotification.save();
-
-      // TODO: return the id of the user as a response
 
       res.status(200).json({ message: "User followed successfully" });
     }
@@ -82,9 +78,7 @@ export const getSuggestedUsers = async (req, res) => {
     ]);
 
     // 1,2,3,4,5,6
-    const filteredUsers = users.filter(
-      (user) => !usersFollowedByMe.following.includes(user._id)
-    );
+    const filteredUsers = users.filter((user) => !usersFollowedByMe.following.includes(user._id));
 
     const suggestedUsers = filteredUsers.slice(0, 4);
 
@@ -98,8 +92,7 @@ export const getSuggestedUsers = async (req, res) => {
 };
 
 export const updateUser = async (req, res) => {
-  const { fullName, email, username, currentPassword, newPassword, bio, link } =
-    req.body;
+  const { fullName, email, username, currentPassword, newPassword, bio, link } = req.body;
   let { profileImg, coverImg } = req.body;
 
   const userId = req.user._id;
@@ -108,10 +101,7 @@ export const updateUser = async (req, res) => {
     let user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (
-      (!newPassword && currentPassword) ||
-      (!currentPassword && newPassword)
-    ) {
+    if ((!newPassword && currentPassword) || (!currentPassword && newPassword)) {
       return res.status(400).json({
         error: "Please provid both current password and new password",
       });
@@ -120,9 +110,7 @@ export const updateUser = async (req, res) => {
     if (currentPassword && newPassword) {
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (newPassword.length < 6) {
-        return res
-          .status(400)
-          .json({ error: "Password must be at least 6 characters long" });
+        return res.status(400).json({ error: "Password must be at least 6 characters long" });
       }
 
       const salt = await bcrypt.genSalt(10);
@@ -131,9 +119,7 @@ export const updateUser = async (req, res) => {
 
     if (profileImg) {
       if (user.profileImg) {
-        await cloudinary.uploader.destroy(
-          user.profileImg.split("/").pop().split(".")[0]
-        );
+        await cloudinary.uploader.destroy(user.profileImg.split("/").pop().split(".")[0]);
       }
 
       const uploadedResponse = await cloudinary.uploader.upload(profileImg);
@@ -142,9 +128,7 @@ export const updateUser = async (req, res) => {
 
     if (coverImg) {
       if (user.coverImg) {
-        await cloudinary.uploader.destroy(
-          user.coverImg.split("/").pop().split(".")[0]
-        );
+        await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
       }
       const uploadedResponse = await cloudinary.uploader.upload(coverImg);
       coverImg = uploadedResponse.secure_url;
