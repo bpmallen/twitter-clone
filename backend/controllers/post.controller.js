@@ -43,9 +43,7 @@ export const deletePost = async (req, res) => {
     }
 
     if (post.user.toString() !== req.user._id.toString()) {
-      return res
-        .status(401)
-        .json({ error: "You are not authorized to delete this post" });
+      return res.status(401).json({ error: "You are not authorized to delete this post" });
     }
 
     if (post.img) {
@@ -107,7 +105,12 @@ export const likeUnlikePost = async (req, res) => {
       // if post is already liked then unlike the post
       await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
       await User.updateOne({ _id: userId }, { $pull: { likedPosts: postId } });
-      res.status(200).json({ message: "Post unliked succesfully" });
+
+      const updatedLikes = post.likes.filter((id) => {
+        id.toString() !== userId.toString;
+      });
+
+      res.status(200).json(updatedLikes);
     } else {
       // likes the post
       post.likes.push(userId);
@@ -121,7 +124,8 @@ export const likeUnlikePost = async (req, res) => {
       });
       await notification.save();
 
-      res.status(200).json({ message: "Post like successfully" });
+      const updatedLikes = post.likes;
+      res.status(200).json(updatedLikes);
     }
   } catch (error) {
     console.log("Error in the likeUnlikePost controller: ", error);
@@ -131,13 +135,10 @@ export const likeUnlikePost = async (req, res) => {
 
 export const getAllPosts = async (req, res) => {
   try {
-    const posts = await Post.find()
-      .sort({ createdAt: -1 })
-      .populate({ path: "user", select: "-password" })
-      .populate({
-        path: "comments.user",
-        select: "-password",
-      });
+    const posts = await Post.find().sort({ createdAt: -1 }).populate({ path: "user", select: "-password" }).populate({
+      path: "comments.user",
+      select: "-password",
+    });
 
     if (posts.length === 0) {
       return res.status(200).json([]);
