@@ -102,13 +102,12 @@ export const updateUser = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     if ((!newPassword && currentPassword) || (!currentPassword && newPassword)) {
-      return res.status(400).json({
-        error: "Please provid both current password and new password",
-      });
+      return res.status(400).json({ error: "Please provide both current password and new password" });
     }
 
     if (currentPassword && newPassword) {
       const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) return res.status(400).json({ error: "Current password is incorrect" });
       if (newPassword.length < 6) {
         return res.status(400).json({ error: "Password must be at least 6 characters long" });
       }
@@ -130,6 +129,7 @@ export const updateUser = async (req, res) => {
       if (user.coverImg) {
         await cloudinary.uploader.destroy(user.coverImg.split("/").pop().split(".")[0]);
       }
+
       const uploadedResponse = await cloudinary.uploader.upload(coverImg);
       coverImg = uploadedResponse.secure_url;
     }
@@ -144,12 +144,12 @@ export const updateUser = async (req, res) => {
 
     user = await user.save();
 
-    // password should be null in the response
+    // password should be null in response
     user.password = null;
 
     return res.status(200).json(user);
   } catch (error) {
-    console.log("Error in updateUser ", error.message);
+    console.log("Error in updateUser: ", error.message);
     res.status(500).json({ error: error.message });
   }
 };
